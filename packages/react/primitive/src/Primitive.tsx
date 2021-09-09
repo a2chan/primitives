@@ -13,6 +13,8 @@ type ComponentPropsWithoutRef<T extends React.ElementType> = PropsWithoutRef<
 
 type Primitives = { [E in typeof NODES[number]]: PrimitiveForwardRefComponent<E> };
 type PrimitivePropsWithRef<E extends React.ElementType> = React.ComponentPropsWithRef<E> & {
+  __part?: string;
+  __group?: string;
   asChild?: boolean;
 };
 
@@ -27,7 +29,7 @@ const Primitive = NODES.reduce(
   (primitive, node) => ({
     ...primitive,
     [node]: React.forwardRef((props: PrimitivePropsWithRef<typeof node>, forwardedRef: any) => {
-      const { asChild, ...primitiveProps } = props;
+      const { asChild, __part, __group, ...primitiveProps } = props;
       const Comp: any = asChild ? Slot : node;
       if ((props as any).as) console.error(AS_ERROR);
       return <Comp {...primitiveProps} ref={forwardedRef} />;

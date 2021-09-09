@@ -1,28 +1,40 @@
 import * as React from 'react';
 
-function createContext<ContextValueType extends object | null>(
-  groupName: string,
-  defaultContext?: ContextValueType
-) {
-  const Context = React.createContext<ContextValueType>(defaultContext as any);
+interface ProviderProps {
+  group: string;
+  children: React.ReactNode;
+}
 
-  function Provider(props: ContextValueType & { children: React.ReactNode }) {
+function createContext<T extends object | null>(groupName: string, defaultContext?: T) {
+  type ContextValue<T> = T & { parentContext?: ContextValue<T> } & Omit<ProviderProps, 'children'>;
+  const Context = React.createContext<ContextValue<T>>(defaultContext as any);
+
+  function Provider(props: T & ProviderProps) {
     const { children, ...providerProps } = props;
+    const parentContext = React.useContext(Context);
     // Only re-memoize when prop values change
     const value = React.useMemo(
-      () => providerProps,
+      () => ({ ...providerProps, parentContext }),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      Object.values(providerProps)
-    ) as ContextValueType;
+      [...Object.values(providerProps), parentContext]
+    ) as ContextValue<T>;
     return <Context.Provider value={value}>{children}</Context.Provider>;
   }
 
-  function useContext(partName: string) {
+  function useContext(groupName: string, partName: string) {
     const context = React.useContext(Context);
+    // const partContext = (function getPartContext(
+    //   context?: ContextValue<T>
+    // ): ContextValue<T> | undefined {
+    //   if (!context) return;
+    //   return context.group === groupName ? context : getPartContext(context.parentContext);
+    // })(context);
+
     if (defaultContext === undefined && context === undefined) {
       throw new Error(`\`${partName}\` must be used within \`${groupName}\``);
     }
-    return context;
+
+    return context || {};
   }
 
   Provider.displayName = groupName + 'Provider';
@@ -30,3 +42,4 @@ function createContext<ContextValueType extends object | null>(
 }
 
 export { createContext };
+export type { ProviderProps };

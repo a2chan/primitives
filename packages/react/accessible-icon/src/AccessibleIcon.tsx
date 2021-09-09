@@ -1,6 +1,10 @@
 import * as React from 'react';
 import * as VisuallyHiddenPrimitive from '@radix-ui/react-visually-hidden';
 
+/* -------------------------------------------------------------------------------------------------
+ * AccessibleIcon
+ * -----------------------------------------------------------------------------------------------*/
+
 const NAME = 'AccessibleIcon';
 
 interface AccessibleIconProps {
@@ -26,6 +30,8 @@ const AccessibleIcon: React.FC<AccessibleIconProps> = ({ children, label }) => {
 };
 
 AccessibleIcon.displayName = NAME;
+
+/* -----------------------------------------------------------------------------------------------*/
 
 const Root = AccessibleIcon;
 

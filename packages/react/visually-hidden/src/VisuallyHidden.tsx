@@ -7,7 +7,7 @@ import type * as Radix from '@radix-ui/react-primitive';
  * VisuallyHidden
  * -----------------------------------------------------------------------------------------------*/
 
-const NAME = 'VisuallyHidden';
+const ROOT_NAME = 'VisuallyHidden';
 
 type VisuallyHiddenElement = React.ElementRef<typeof Primitive.span>;
 type PrimitiveSpanProps = Radix.ComponentPropsWithoutRef<typeof Primitive.span>;
@@ -15,9 +15,11 @@ interface VisuallyHiddenProps extends PrimitiveSpanProps {}
 
 const VisuallyHidden = React.forwardRef<VisuallyHiddenElement, VisuallyHiddenProps>(
   (props, forwardedRef) => {
+    const { __group = ROOT_NAME, ...visuallyHiddenProps } = props;
     return (
       <Primitive.span
-        {...props}
+        {...visuallyHiddenProps}
+        __group={__group}
         ref={forwardedRef}
         style={{
           ...props.style,
@@ -38,7 +40,7 @@ const VisuallyHidden = React.forwardRef<VisuallyHiddenElement, VisuallyHiddenPro
   }
 );
 
-VisuallyHidden.displayName = NAME;
+VisuallyHidden.displayName = ROOT_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 
