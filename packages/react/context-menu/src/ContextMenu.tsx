@@ -27,6 +27,7 @@ const [ContextMenuProvider, useContextMenuContext] =
   createContext<ContextMenuContextValue>(CONTEXT_MENU_NAME);
 
 interface ContextMenuProps {
+  __group?: string;
   onOpenChange?(open: boolean): void;
   dir?: Direction;
   modal?: boolean;

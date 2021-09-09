@@ -5,9 +5,11 @@ import * as VisuallyHiddenPrimitive from '@radix-ui/react-visually-hidden';
  * AccessibleIcon
  * -----------------------------------------------------------------------------------------------*/
 
-const NAME = 'AccessibleIcon';
+const ROOT_NAME = 'AccessibleIcon';
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 interface AccessibleIconProps {
+  __group?: string;
   /**
    * The accessible label for the icon. This label will be visually hidden but announced to screen
    * reader users, similar to `alt` text for `img` tags.
@@ -15,7 +17,8 @@ interface AccessibleIconProps {
   label: string;
 }
 
-const AccessibleIcon: React.FC<AccessibleIconProps> = ({ children, label }) => {
+const AccessibleIcon: React.FC<AccessibleIconProps> = (props) => {
+  const { __group = ROOT_NAME, children, label } = props;
   const child = React.Children.only(children);
   return (
     <>
@@ -24,12 +27,12 @@ const AccessibleIcon: React.FC<AccessibleIconProps> = ({ children, label }) => {
         'aria-hidden': 'true',
         focusable: 'false', // See: https://allyjs.io/tutorials/focusing-in-svg.html#making-svg-elements-focusable
       })}
-      <VisuallyHiddenPrimitive.Root>{label}</VisuallyHiddenPrimitive.Root>
+      <VisuallyHiddenPrimitive.Root __group={__group}>{label}</VisuallyHiddenPrimitive.Root>
     </>
   );
 };
 
-AccessibleIcon.displayName = NAME;
+AccessibleIcon.displayName = ROOT_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 

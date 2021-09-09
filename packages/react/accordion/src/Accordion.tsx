@@ -14,7 +14,7 @@ import type * as Radix from '@radix-ui/react-primitive';
  * -----------------------------------------------------------------------------------------------*/
 
 const ROOT_NAME = 'Accordion';
-const A11Y_KEYS = ['Home', 'End', 'ArrowDown', 'ArrowUp'];
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 type AccordionElement = AccordionImplMultipleElement | AccordionImplSingleElement;
 interface AccordionSingleProps extends AccordionImplSingleProps {
@@ -38,11 +38,11 @@ const Accordion = React.forwardRef<AccordionElement, AccordionSingleProps | Acco
       return <AccordionImplMultiple {...multipleProps} ref={forwardedRef} />;
     }
 
-    throw new Error(`Missing prop \`type\` expected on \`${ROOT_NAME}\``);
+    throw new Error(`Missing prop \`type\` expected on \`${ROOT_DISPLAY_NAME}\``);
   }
 );
 
-Accordion.displayName = ROOT_NAME;
+Accordion.displayName = ROOT_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 
@@ -106,7 +106,7 @@ const AccordionImplSingle = React.forwardRef<AccordionImplSingleElement, Accordi
         onItemClose={React.useCallback(() => collapsible && setValue(''), [collapsible, setValue])}
       >
         <AccordionCollapsibleProvider group={__group} collapsible={collapsible}>
-          <AccordionImpl {...accordionSingleProps} ref={forwardedRef} />
+          <AccordionImpl {...accordionSingleProps} __group={__group} ref={forwardedRef} />
         </AccordionCollapsibleProvider>
       </AccordionValueProvider>
     );
@@ -168,13 +168,15 @@ const AccordionImplMultiple = React.forwardRef<
       onItemClose={handleItemClose}
     >
       <AccordionCollapsibleProvider group={__group} collapsible={true}>
-        <AccordionImpl {...accordionMultipleProps} ref={forwardedRef} />
+        <AccordionImpl {...accordionMultipleProps} __group={__group} ref={forwardedRef} />
       </AccordionCollapsibleProvider>
     </AccordionValueProvider>
   );
 });
 
 /* -----------------------------------------------------------------------------------------------*/
+
+const ACCORDION_KEY = ['Home', 'End', 'ArrowDown', 'ArrowUp'];
 
 type AccordionImplContextValue = {
   triggerNodesRef: React.MutableRefObject<Set<HTMLElement | null>>;
@@ -204,7 +206,7 @@ const AccordionImpl = React.forwardRef<AccordionImplElement, AccordionImplProps>
 
     const handleKeyDown = composeEventHandlers(props.onKeyDown, (event) => {
       const target = event.target as HTMLElement;
-      const isAccordionKey = A11Y_KEYS.includes(event.key);
+      const isAccordionKey = ACCORDION_KEY.includes(event.key);
 
       if (!isAccordionKey || !isButton(target)) {
         return;
@@ -246,6 +248,7 @@ const AccordionImpl = React.forwardRef<AccordionImplElement, AccordionImplProps>
       <AccordionImplProvider group={__group} triggerNodesRef={triggerNodesRef} disabled={disabled}>
         <Primitive.div
           {...accordionProps}
+          __group={__group}
           ref={composedRefs}
           onKeyDown={disabled ? undefined : handleKeyDown}
         />
@@ -258,12 +261,13 @@ const AccordionImpl = React.forwardRef<AccordionImplElement, AccordionImplProps>
  * AccordionItem
  * -----------------------------------------------------------------------------------------------*/
 
-const ITEM_NAME = 'Accordion.Item';
+const ITEM_NAME = 'Item';
+const ITEM_DISPLAY_NAME = ROOT_NAME + ITEM_NAME;
 
 type AccordionItemContextValue = { open?: boolean; disabled?: boolean; triggerId: string };
 
 const [AccordionItemProvider, useAccordionItemContext] =
-  createContext<AccordionItemContextValue>(ITEM_NAME);
+  createContext<AccordionItemContextValue>(ITEM_DISPLAY_NAME);
 
 type AccordionItemElement = React.ElementRef<typeof CollapsiblePrimitive.Root>;
 type CollapsibleProps = Radix.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Root>;
@@ -294,10 +298,12 @@ const AccordionItem = React.forwardRef<AccordionItemElement, AccordionItemProps>
     const disabled = accordionContext.disabled || props.disabled;
 
     return (
-      <AccordionItemProvider open={open} disabled={disabled} triggerId={triggerId}>
+      <AccordionItemProvider group={__group} open={open} disabled={disabled} triggerId={triggerId}>
         <CollapsiblePrimitive.Root
           data-state={open ? 'open' : 'closed'}
           {...accordionItemProps}
+          __group={__group}
+          __part={__part}
           ref={forwardedRef}
           disabled={disabled}
           open={open}
@@ -314,13 +320,14 @@ const AccordionItem = React.forwardRef<AccordionItemElement, AccordionItemProps>
   }
 );
 
-AccordionItem.displayName = ITEM_NAME;
+AccordionItem.displayName = ITEM_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * AccordionHeader
  * -----------------------------------------------------------------------------------------------*/
 
-const HEADER_NAME = 'Accordion.Header';
+const HEADER_NAME = 'Header';
+const HEADER_DISPLAY_NAME = ROOT_NAME + HEADER_NAME;
 
 type AccordionHeaderElement = React.ElementRef<typeof Primitive.h3>;
 type PrimitiveHeading3Props = Radix.ComponentPropsWithoutRef<typeof Primitive.h3>;
@@ -332,25 +339,29 @@ interface AccordionHeaderProps extends PrimitiveHeading3Props {}
  */
 const AccordionHeader = React.forwardRef<AccordionHeaderElement, AccordionHeaderProps>(
   (props, forwardedRef) => {
-    const itemContext = useAccordionItemContext(HEADER_NAME);
+    const { __group = ROOT_NAME, __part = HEADER_NAME, ...headerProps } = props;
+    const itemContext = useAccordionItemContext(__group, __part);
     return (
       <Primitive.h3
         data-state={getState(itemContext.open)}
         data-disabled={itemContext.disabled ? '' : undefined}
-        {...props}
+        {...headerProps}
+        __group={__group}
+        __part={__part}
         ref={forwardedRef}
       />
     );
   }
 );
 
-AccordionHeader.displayName = HEADER_NAME;
+AccordionHeader.displayName = HEADER_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * AccordionTrigger
  * -----------------------------------------------------------------------------------------------*/
 
-const TRIGGER_NAME = 'Accordion.Trigger';
+const TRIGGER_NAME = 'Trigger';
+const TRIGGER_DISPLAY_NAME = ROOT_NAME + TRIGGER_NAME;
 
 type AccordionTriggerElement = React.ElementRef<typeof CollapsiblePrimitive.Trigger>;
 type CollapsibleTriggerProps = Radix.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Trigger>;
@@ -362,9 +373,10 @@ interface AccordionTriggerProps extends CollapsibleTriggerProps {}
  */
 const AccordionTrigger = React.forwardRef<AccordionTriggerElement, AccordionTriggerProps>(
   (props, forwardedRef) => {
-    const { triggerNodesRef } = useAccordionContext(TRIGGER_NAME);
-    const itemContext = useAccordionItemContext(TRIGGER_NAME);
-    const { collapsible } = useAccordionCollapsibleContext(TRIGGER_NAME);
+    const { __group = ROOT_NAME, __part = TRIGGER_NAME, ...triggerProps } = props;
+    const { triggerNodesRef } = useAccordionContext(__group, __part);
+    const itemContext = useAccordionItemContext(__group, __part);
+    const { collapsible } = useAccordionCollapsibleContext(__group, __part);
 
     const ref = React.useRef<AccordionTriggerElement>(null);
     const composedRefs = useComposedRefs(ref, forwardedRef);
@@ -386,20 +398,23 @@ const AccordionTrigger = React.forwardRef<AccordionTriggerElement, AccordionTrig
       <CollapsiblePrimitive.Trigger
         aria-disabled={(itemContext.open && !collapsible) || undefined}
         id={itemContext.triggerId}
-        {...props}
+        {...triggerProps}
+        __group={__group}
+        __part={__part}
         ref={composedRefs}
       />
     );
   }
 );
 
-AccordionTrigger.displayName = TRIGGER_NAME;
+AccordionTrigger.displayName = TRIGGER_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * AccordionContent
  * -----------------------------------------------------------------------------------------------*/
 
-const CONTENT_NAME = 'Accordion.Content';
+const CONTENT_NAME = 'Content';
+const CONTENT_DISPLAY_NAME = ROOT_NAME + CONTENT_NAME;
 
 type AccordionContentElement = React.ElementRef<typeof CollapsiblePrimitive.Content>;
 type CollapsibleContentProps = Radix.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content>;
@@ -410,12 +425,15 @@ interface AccordionContentProps extends CollapsibleContentProps {}
  */
 const AccordionContent = React.forwardRef<AccordionContentElement, AccordionContentProps>(
   (props, forwardedRef) => {
-    const itemContext = useAccordionItemContext(CONTENT_NAME);
+    const { __group = ROOT_NAME, __part = CONTENT_NAME, ...contentProps } = props;
+    const itemContext = useAccordionItemContext(__group, __part);
     return (
       <CollapsiblePrimitive.Content
         role="region"
         aria-labelledby={itemContext.triggerId}
-        {...props}
+        {...contentProps}
+        __group={__group}
+        __part={__part}
         style={{
           ['--radix-accordion-content-height' as any]: 'var(--radix-collapsible-content-height)',
           ...props.style,
@@ -426,7 +444,7 @@ const AccordionContent = React.forwardRef<AccordionContentElement, AccordionCont
   }
 );
 
-AccordionContent.displayName = CONTENT_NAME;
+AccordionContent.displayName = CONTENT_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 

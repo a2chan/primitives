@@ -21,7 +21,8 @@ const listenerMap = new Map<Element, number>();
  * Announce
  * -----------------------------------------------------------------------------------------------*/
 
-const NAME = 'Announce';
+const ROOT_NAME = 'Announce';
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 type AnnounceElement = React.ElementRef<typeof Primitive.div>;
 type PrimitiveDivProps = Radix.ComponentPropsWithoutRef<typeof Primitive.div>;
@@ -86,6 +87,7 @@ interface AnnounceProps extends PrimitiveDivProps {
 
 const Announce = React.forwardRef<AnnounceElement, AnnounceProps>((props, forwardedRef) => {
   const {
+    __group = ROOT_NAME,
     'aria-relevant': ariaRelevant,
     children,
     type = 'polite',
@@ -168,7 +170,7 @@ const Announce = React.forwardRef<AnnounceElement, AnnounceProps>((props, forwar
 
   return (
     <React.Fragment>
-      <Primitive.div {...regionProps} ref={ref}>
+      <Primitive.div {...regionProps} __group={__group} ref={ref}>
         {children}
       </Primitive.div>
 
@@ -178,7 +180,7 @@ const Announce = React.forwardRef<AnnounceElement, AnnounceProps>((props, forwar
   );
 });
 
-Announce.displayName = NAME;
+Announce.displayName = ROOT_DISPLAY_NAME;
 
 /* ---------------------------------------------------------------------------------------------- */
 

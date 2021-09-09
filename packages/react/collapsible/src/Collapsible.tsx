@@ -14,7 +14,8 @@ import type * as Radix from '@radix-ui/react-primitive';
  * Collapsible
  * -----------------------------------------------------------------------------------------------*/
 
-const COLLAPSIBLE_NAME = 'Collapsible';
+const ROOT_NAME = 'Collapsible';
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 type CollapsibleContextValue = {
   contentId: string;
@@ -24,7 +25,7 @@ type CollapsibleContextValue = {
 };
 
 const [CollapsibleProvider, useCollapsibleContext] =
-  createContext<CollapsibleContextValue>(COLLAPSIBLE_NAME);
+  createContext<CollapsibleContextValue>(ROOT_NAME);
 
 type CollapsibleElement = React.ElementRef<typeof Primitive.div>;
 type PrimitiveDivProps = Radix.ComponentPropsWithoutRef<typeof Primitive.div>;
@@ -37,7 +38,14 @@ interface CollapsibleProps extends PrimitiveDivProps {
 
 const Collapsible = React.forwardRef<CollapsibleElement, CollapsibleProps>(
   (props, forwardedRef) => {
-    const { open: openProp, defaultOpen, disabled, onOpenChange, ...collapsibleProps } = props;
+    const {
+      __group = ROOT_NAME,
+      open: openProp,
+      defaultOpen,
+      disabled,
+      onOpenChange,
+      ...collapsibleProps
+    } = props;
 
     const [open = false, setOpen] = useControllableState({
       prop: openProp,
@@ -47,6 +55,7 @@ const Collapsible = React.forwardRef<CollapsibleElement, CollapsibleProps>(
 
     return (
       <CollapsibleProvider
+        group={__group}
         disabled={disabled}
         contentId={useId()}
         open={open}
@@ -56,6 +65,7 @@ const Collapsible = React.forwardRef<CollapsibleElement, CollapsibleProps>(
           data-state={getState(open)}
           data-disabled={disabled ? '' : undefined}
           {...collapsibleProps}
+          __group={__group}
           ref={forwardedRef}
         />
       </CollapsibleProvider>
@@ -63,13 +73,14 @@ const Collapsible = React.forwardRef<CollapsibleElement, CollapsibleProps>(
   }
 );
 
-Collapsible.displayName = COLLAPSIBLE_NAME;
+Collapsible.displayName = ROOT_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * CollapsibleTrigger
  * -----------------------------------------------------------------------------------------------*/
 
-const TRIGGER_NAME = 'CollapsibleTrigger';
+const TRIGGER_NAME = 'Trigger';
+const TRIGGER_DISPLAY_NAME = ROOT_NAME + TRIGGER_NAME;
 
 type CollapsibleTriggerElement = React.ElementRef<typeof Primitive.button>;
 type PrimitiveButtonProps = Radix.ComponentPropsWithoutRef<typeof Primitive.button>;
@@ -77,7 +88,8 @@ interface CollapsibleTriggerProps extends PrimitiveButtonProps {}
 
 const CollapsibleTrigger = React.forwardRef<CollapsibleTriggerElement, CollapsibleTriggerProps>(
   (props, forwardedRef) => {
-    const context = useCollapsibleContext(TRIGGER_NAME);
+    const { __group = ROOT_NAME, __part = TRIGGER_NAME, ...triggerProps } = props;
+    const context = useCollapsibleContext(__group, __part);
     return (
       <Primitive.button
         aria-controls={context.contentId}
@@ -85,7 +97,9 @@ const CollapsibleTrigger = React.forwardRef<CollapsibleTriggerElement, Collapsib
         data-state={getState(context.open)}
         data-disabled={context.disabled ? '' : undefined}
         disabled={context.disabled}
-        {...props}
+        {...triggerProps}
+        __group={__group}
+        __part={__part}
         ref={forwardedRef}
         onClick={composeEventHandlers(props.onClick, context.onOpenToggle)}
       />
@@ -93,13 +107,14 @@ const CollapsibleTrigger = React.forwardRef<CollapsibleTriggerElement, Collapsib
   }
 );
 
-CollapsibleTrigger.displayName = TRIGGER_NAME;
+CollapsibleTrigger.displayName = TRIGGER_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * CollapsibleContent
  * -----------------------------------------------------------------------------------------------*/
 
-const CONTENT_NAME = 'CollapsibleContent';
+const CONTENT_NAME = 'Content';
+const CONTENT_DISPLAY_NAME = ROOT_NAME + CONTENT_NAME;
 
 type CollapsibleContentElement = CollapsibleContentImplElement;
 interface CollapsibleContentProps extends Omit<CollapsibleContentImplProps, 'present'> {
@@ -112,19 +127,25 @@ interface CollapsibleContentProps extends Omit<CollapsibleContentImplProps, 'pre
 
 const CollapsibleContent = React.forwardRef<CollapsibleContentElement, CollapsibleContentProps>(
   (props, forwardedRef) => {
-    const { forceMount, ...contentProps } = props;
-    const context = useCollapsibleContext(CONTENT_NAME);
+    const { __group = ROOT_NAME, __part = CONTENT_NAME, forceMount, ...contentProps } = props;
+    const context = useCollapsibleContext(__group, __part);
     return (
       <Presence present={forceMount || context.open}>
         {({ present }) => (
-          <CollapsibleContentImpl {...contentProps} ref={forwardedRef} present={present} />
+          <CollapsibleContentImpl
+            {...contentProps}
+            __group={__group}
+            __part={__part}
+            ref={forwardedRef}
+            present={present}
+          />
         )}
       </Presence>
     );
   }
 );
 
-CollapsibleContent.displayName = CONTENT_NAME;
+CollapsibleContent.displayName = CONTENT_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 
@@ -137,8 +158,8 @@ const CollapsibleContentImpl = React.forwardRef<
   CollapsibleContentImplElement,
   CollapsibleContentImplProps
 >((props, forwardedRef) => {
-  const { present, children, ...contentProps } = props;
-  const context = useCollapsibleContext(CONTENT_NAME);
+  const { __group = ROOT_NAME, __part = CONTENT_NAME, present, children, ...contentProps } = props;
+  const context = useCollapsibleContext(__group, __part);
   const [isPresent, setIsPresent] = React.useState(present);
   const ref = React.useRef<CollapsibleContentImplElement>(null);
   const composedRefs = useComposedRefs(forwardedRef, ref);
@@ -181,6 +202,8 @@ const CollapsibleContentImpl = React.forwardRef<
       id={context.contentId}
       hidden={!isOpen}
       {...contentProps}
+      __group={__group}
+      __part={__part}
       ref={composedRefs}
       style={{
         [`--radix-collapsible-content-height` as any]: height ? `${height}px` : undefined,

@@ -30,7 +30,7 @@ const stateMachine = createStateMachine(tooltipStateChart);
  * Tooltip
  * -----------------------------------------------------------------------------------------------*/
 
-const TOOLTIP_NAME = 'Tooltip';
+const ROOT_NAME = 'Tooltip';
 
 type TooltipContextValue = {
   contentId: string;
@@ -43,9 +43,10 @@ type TooltipContextValue = {
   onClose(): void;
 };
 
-const [TooltipProvider, useTooltipContext] = createContext<TooltipContextValue>(TOOLTIP_NAME);
+const [TooltipProvider, useTooltipContext] = createContext<TooltipContextValue>(ROOT_NAME);
 
 interface TooltipProps {
+  __group: string;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -65,6 +66,7 @@ interface TooltipProps {
 
 const Tooltip: React.FC<TooltipProps> = (props) => {
   const {
+    __group = ROOT_NAME,
     children,
     open: openProp,
     defaultOpen = false,
@@ -140,6 +142,7 @@ const Tooltip: React.FC<TooltipProps> = (props) => {
   return (
     <PopperPrimitive.Root>
       <TooltipProvider
+        group={__group}
         contentId={contentId}
         open={open}
         stateAttribute={stateAttribute}
@@ -155,7 +158,7 @@ const Tooltip: React.FC<TooltipProps> = (props) => {
   );
 };
 
-Tooltip.displayName = TOOLTIP_NAME;
+Tooltip.displayName = ROOT_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * TooltipTrigger

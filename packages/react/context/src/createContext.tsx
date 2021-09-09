@@ -21,20 +21,25 @@ function createContext<T extends object | null>(groupName: string, defaultContex
     return <Context.Provider value={value}>{children}</Context.Provider>;
   }
 
-  function useContext(groupName: string, partName: string) {
+  function useContext(groupName: string, partName: string | null) {
+    const isRootPart = partName === null;
     const context = React.useContext(Context);
-    // const partContext = (function getPartContext(
-    //   context?: ContextValue<T>
-    // ): ContextValue<T> | undefined {
-    //   if (!context) return;
-    //   return context.group === groupName ? context : getPartContext(context.parentContext);
-    // })(context);
+    const partContext = (function getPartContext(
+      context?: ContextValue<T>
+    ): ContextValue<T> | undefined {
+      if (!context) return;
+      return context.group === groupName ? context : getPartContext(context.parentContext);
+    })(context);
 
-    if (defaultContext === undefined && context === undefined) {
-      throw new Error(`\`${partName}\` must be used within \`${groupName}\``);
+    if (defaultContext === undefined && partContext === undefined) {
+      if (isRootPart) {
+        throw new Error(`Missing default context for \`${groupName}\``);
+      } else {
+        throw new Error(`\`${partName}\` must be used within \`${groupName}\``);
+      }
     }
 
-    return context || {};
+    return partContext || context;
   }
 
   Provider.displayName = groupName + 'Provider';

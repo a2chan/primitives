@@ -20,7 +20,7 @@ import type * as Radix from '@radix-ui/react-primitive';
  * Popover
  * -----------------------------------------------------------------------------------------------*/
 
-const POPOVER_NAME = 'Popover';
+const ROOT_NAME = 'Popover';
 
 type PopoverContextValue = {
   triggerRef: React.RefObject<HTMLButtonElement>;
@@ -34,9 +34,10 @@ type PopoverContextValue = {
   modal: boolean;
 };
 
-const [PopoverProvider, usePopoverContext] = createContext<PopoverContextValue>(POPOVER_NAME);
+const [PopoverProvider, usePopoverContext] = createContext<PopoverContextValue>(ROOT_NAME);
 
 interface PopoverProps {
+  __group?: string;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -44,7 +45,14 @@ interface PopoverProps {
 }
 
 const Popover: React.FC<PopoverProps> = (props) => {
-  const { children, open: openProp, defaultOpen, onOpenChange, modal = false } = props;
+  const {
+    __group = ROOT_NAME,
+    children,
+    open: openProp,
+    defaultOpen,
+    onOpenChange,
+    modal = false,
+  } = props;
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [hasCustomAnchor, setHasCustomAnchor] = React.useState(false);
   const [open = false, setOpen] = useControllableState({
@@ -56,6 +64,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
   return (
     <PopperPrimitive.Root>
       <PopoverProvider
+        group={__group}
         contentId={useId()}
         triggerRef={triggerRef}
         open={open}
@@ -72,7 +81,7 @@ const Popover: React.FC<PopoverProps> = (props) => {
   );
 };
 
-Popover.displayName = POPOVER_NAME;
+Popover.displayName = ROOT_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * PopoverAnchor

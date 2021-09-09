@@ -341,20 +341,23 @@ function createTotalLayerCount(displayName?: string) {
   return [TotalLayerCountProvider, useTotalLayerCount] as const;
 }
 
-function createRunningLayerCount(displayName?: string) {
+function createRunningLayerCount(displayName = 'RunningLayerCount') {
   const [RunningLayerCountProviderImp, useRunningLayerCount] = createContext('RunningLayerCount', {
     count: 0,
   });
 
-  const RunningLayerCountProvider: React.FC<{ runningCount: number }> = (props) => {
-    const { children, runningCount } = props;
+  const RunningLayerCountProvider: React.FC<{ __group?: string; runningCount: number }> = (
+    props
+  ) => {
+    const { __group = displayName, children, runningCount } = props;
     return (
-      <RunningLayerCountProviderImp count={runningCount}>{children}</RunningLayerCountProviderImp>
+      <RunningLayerCountProviderImp group={__group} count={runningCount}>
+        {children}
+      </RunningLayerCountProviderImp>
     );
   };
-  if (displayName) {
-    RunningLayerCountProvider.displayName = displayName;
-  }
+
+  RunningLayerCountProvider.displayName = displayName;
 
   const CONSUMER_NAME = 'RunningLayerCountConsumer';
   function usePreviousRunningLayerCount() {

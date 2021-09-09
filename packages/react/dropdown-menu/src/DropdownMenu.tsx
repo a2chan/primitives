@@ -40,6 +40,7 @@ const [DropdownMenuProvider, useDropdownMenuContext] = createContext<
 >(DROPDOWN_MENU_NAME);
 
 interface DropdownMenuProps {
+  __group?: string;
   dir?: Direction;
   open?: boolean;
   defaultOpen?: boolean;
@@ -87,6 +88,7 @@ DropdownMenu.displayName = DROPDOWN_MENU_NAME;
 /* ---------------------------------------------------------------------------------------------- */
 
 interface DropdownMenuRootProps {
+  __group?: string;
   dir?: Direction;
   open: boolean;
   onOpenChange(open: boolean): void;

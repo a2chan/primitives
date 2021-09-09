@@ -10,7 +10,8 @@ import type * as Radix from '@radix-ui/react-primitive';
  * Avatar
  * -----------------------------------------------------------------------------------------------*/
 
-const AVATAR_NAME = 'Avatar';
+const ROOT_NAME = 'Avatar';
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 type ImageLoadingStatus = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -19,31 +20,34 @@ type AvatarContextValue = {
   onImageLoadingStatusChange(status: ImageLoadingStatus): void;
 };
 
-const [AvatarProvider, useAvatarContext] = createContext<AvatarContextValue>(AVATAR_NAME);
+const [AvatarProvider, useAvatarContext] = createContext<AvatarContextValue>(ROOT_NAME);
 
 type AvatarElement = React.ElementRef<typeof Primitive.span>;
 type PrimitiveSpanProps = Radix.ComponentPropsWithoutRef<typeof Primitive.span>;
 interface AvatarProps extends PrimitiveSpanProps {}
 
 const Avatar = React.forwardRef<AvatarElement, AvatarProps>((props, forwardedRef) => {
+  const { __group = ROOT_NAME, ...avatarProps } = props;
   const [imageLoadingStatus, setImageLoadingStatus] = React.useState<ImageLoadingStatus>('idle');
   return (
     <AvatarProvider
+      group={__group}
       imageLoadingStatus={imageLoadingStatus}
       onImageLoadingStatusChange={setImageLoadingStatus}
     >
-      <Primitive.span {...props} ref={forwardedRef} />
+      <Primitive.span {...avatarProps} __group={__group} ref={forwardedRef} />
     </AvatarProvider>
   );
 });
 
-Avatar.displayName = AVATAR_NAME;
+Avatar.displayName = ROOT_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * AvatarImage
  * -----------------------------------------------------------------------------------------------*/
 
-const IMAGE_NAME = 'AvatarImage';
+const IMAGE_NAME = 'Image';
+const IMAGE_DISPLAY_NAME = ROOT_NAME + IMAGE_NAME;
 
 type AvatarImageElement = React.ElementRef<typeof Primitive.img>;
 type PrimitiveImageProps = Radix.ComponentPropsWithoutRef<typeof Primitive.img>;
@@ -53,8 +57,14 @@ interface AvatarImageProps extends PrimitiveImageProps {
 
 const AvatarImage = React.forwardRef<AvatarImageElement, AvatarImageProps>(
   (props, forwardedRef) => {
-    const { src, onLoadingStatusChange = () => {}, ...imageProps } = props;
-    const context = useAvatarContext(IMAGE_NAME);
+    const {
+      __group = ROOT_NAME,
+      __part = IMAGE_NAME,
+      src,
+      onLoadingStatusChange = () => {},
+      ...imageProps
+    } = props;
+    const context = useAvatarContext(__group, __part);
     const imageLoadingStatus = useImageLoadingStatus(src);
     const handleLoadingStatusChange = useCallbackRef((status: ImageLoadingStatus) => {
       onLoadingStatusChange(status);
@@ -68,18 +78,25 @@ const AvatarImage = React.forwardRef<AvatarImageElement, AvatarImageProps>(
     }, [imageLoadingStatus, handleLoadingStatusChange]);
 
     return imageLoadingStatus === 'loaded' ? (
-      <Primitive.img {...imageProps} ref={forwardedRef} src={src} />
+      <Primitive.img
+        {...imageProps}
+        __group={__group}
+        __part={__part}
+        ref={forwardedRef}
+        src={src}
+      />
     ) : null;
   }
 );
 
-AvatarImage.displayName = IMAGE_NAME;
+AvatarImage.displayName = IMAGE_DISPLAY_NAME;
 
 /* -------------------------------------------------------------------------------------------------
  * AvatarFallback
  * -----------------------------------------------------------------------------------------------*/
 
-const FALLBACK_NAME = 'AvatarFallback';
+const FALLBACK_NAME = 'Fallback';
+const FALLBACK_DISPLAY_NAME = ROOT_NAME + FALLBACK_NAME;
 
 type AvatarFallbackElement = React.ElementRef<typeof Primitive.span>;
 interface AvatarFallbackProps extends PrimitiveSpanProps {
@@ -88,8 +105,8 @@ interface AvatarFallbackProps extends PrimitiveSpanProps {
 
 const AvatarFallback = React.forwardRef<AvatarFallbackElement, AvatarFallbackProps>(
   (props, forwardedRef) => {
-    const { delayMs, ...fallbackProps } = props;
-    const context = useAvatarContext(FALLBACK_NAME);
+    const { __group = ROOT_NAME, __part = FALLBACK_NAME, delayMs, ...fallbackProps } = props;
+    const context = useAvatarContext(__group, __part);
     const [canRender, setCanRender] = React.useState(delayMs === undefined);
 
     React.useEffect(() => {
@@ -100,12 +117,12 @@ const AvatarFallback = React.forwardRef<AvatarFallbackElement, AvatarFallbackPro
     }, [delayMs]);
 
     return canRender && context.imageLoadingStatus !== 'loaded' ? (
-      <Primitive.span {...fallbackProps} ref={forwardedRef} />
+      <Primitive.span {...fallbackProps} __group={__group} __part={__part} ref={forwardedRef} />
     ) : null;
   }
 );
 
-AvatarFallback.displayName = FALLBACK_NAME;
+AvatarFallback.displayName = FALLBACK_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 

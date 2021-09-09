@@ -38,7 +38,7 @@ const SUB_CLOSE_KEYS: Record<Direction, string[]> = {
  * Menu
  * -----------------------------------------------------------------------------------------------*/
 
-const MENU_NAME = 'Menu';
+const ROOT_NAME = 'Menu';
 
 type MenuRootContextValue = {
   isSubmenu: false;
@@ -61,10 +61,11 @@ type MenuSubContextValue = Omit<MenuRootContextValue, 'isSubmenu'> & {
 };
 
 const [MenuProvider, useMenuContext] = createContext<MenuRootContextValue | MenuSubContextValue>(
-  MENU_NAME
+  ROOT_NAME
 );
 
 interface MenuProps {
+  __group?: string;
   open?: boolean;
   onOpenChange?(open: boolean): void;
   dir?: Direction;
@@ -72,7 +73,7 @@ interface MenuProps {
 }
 
 const Menu: React.FC<MenuProps> = (props) => {
-  const { open = false, children, onOpenChange, modal = true } = props;
+  const { __group = ROOT_NAME, open = false, children, onOpenChange, modal = true } = props;
   const [content, setContent] = React.useState<MenuContentElement | null>(null);
   const isUsingKeyboardRef = React.useRef(false);
   const handleOpenChange = useCallbackRef(onOpenChange);
@@ -96,6 +97,7 @@ const Menu: React.FC<MenuProps> = (props) => {
   return (
     <PopperPrimitive.Root>
       <MenuProvider
+        group={__group}
         isSubmenu={false}
         isUsingKeyboardRef={isUsingKeyboardRef}
         dir={computedDirection}
@@ -112,19 +114,20 @@ const Menu: React.FC<MenuProps> = (props) => {
   );
 };
 
-Menu.displayName = MENU_NAME;
+Menu.displayName = ROOT_NAME;
 
 /* ---------------------------------------------------------------------------------------------- */
 
 const SUB_NAME = 'MenuSub';
 
 interface MenuSubProps {
+  __group?: string;
   open?: boolean;
   onOpenChange?(open: boolean): void;
 }
 
 const MenuSub: React.FC<MenuSubProps> = (props) => {
-  const { children, open = false, onOpenChange } = props;
+  const { __group = ROOT_NAME, children, open = false, onOpenChange } = props;
   const parentMenuContext = useMenuContext(SUB_NAME);
   const [trigger, setTrigger] = React.useState<MenuSubTriggerElement | null>(null);
   const [content, setContent] = React.useState<MenuContentElement | null>(null);
@@ -139,6 +142,7 @@ const MenuSub: React.FC<MenuSubProps> = (props) => {
   return (
     <PopperPrimitive.Root>
       <MenuProvider
+        group={__group}
         isSubmenu={true}
         isUsingKeyboardRef={parentMenuContext.isUsingKeyboardRef}
         dir={parentMenuContext.dir}

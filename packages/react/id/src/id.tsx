@@ -4,20 +4,21 @@
 import * as React from 'react';
 import { createContext } from '@radix-ui/react-context';
 
-const PROVIDER_NAME = 'IdProvider';
+const ROOT_NAME = 'IdProvider';
 
 const defaultIdContext = {
   prefix: Math.round(Math.random() * 10000000000),
   current: 0,
 };
 
-const [IdProviderImpl, useIdContext] = createContext(PROVIDER_NAME, defaultIdContext);
+const [IdProviderImpl, useIdContext] = createContext(ROOT_NAME, defaultIdContext);
 
 const IdProvider: React.FC<{ children: React.ReactNode }> = (props) => {
-  const currentContext = useIdContext(PROVIDER_NAME);
+  const currentContext = useIdContext(ROOT_NAME, null);
   const isRootIdProvider = currentContext === defaultIdContext;
   return (
     <IdProviderImpl
+      group={ROOT_NAME}
       prefix={isRootIdProvider ? 0 : ++currentContext.prefix}
       current={0}
       {...props}
@@ -28,7 +29,7 @@ const IdProvider: React.FC<{ children: React.ReactNode }> = (props) => {
 const CONSUMER_NAME = 'IdProviderConsumer';
 
 function useId(deterministicId?: string): string {
-  const context = useIdContext(CONSUMER_NAME);
+  const context = useIdContext(CONSUMER_NAME, null);
   const isBrowser = Boolean(globalThis?.document);
 
   if (!isBrowser && context === defaultIdContext) {

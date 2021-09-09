@@ -7,17 +7,19 @@ import type * as Radix from '@radix-ui/react-primitive';
  * Arrow
  * -----------------------------------------------------------------------------------------------*/
 
-const NAME = 'Arrow';
+const ROOT_NAME = 'Arrow';
+const ROOT_DISPLAY_NAME = ROOT_NAME;
 
 type ArrowElement = React.ElementRef<typeof Primitive.svg>;
 type PrimitiveSvgProps = Radix.ComponentPropsWithoutRef<typeof Primitive.svg>;
 interface ArrowProps extends PrimitiveSvgProps {}
 
 const Arrow = React.forwardRef<ArrowElement, ArrowProps>((props, forwardedRef) => {
-  const { children, width = 10, height = 5, ...arrowProps } = props;
+  const { __group = ROOT_NAME, children, width = 10, height = 5, ...arrowProps } = props;
   return (
     <Primitive.svg
       {...arrowProps}
+      __group={__group}
       ref={forwardedRef}
       width={width}
       height={height}
@@ -30,7 +32,7 @@ const Arrow = React.forwardRef<ArrowElement, ArrowProps>((props, forwardedRef) =
   );
 });
 
-Arrow.displayName = NAME;
+Arrow.displayName = ROOT_DISPLAY_NAME;
 
 /* -----------------------------------------------------------------------------------------------*/
 

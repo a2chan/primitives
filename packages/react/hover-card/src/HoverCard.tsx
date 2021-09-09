@@ -25,6 +25,7 @@ const [HoverCardProvider, useHoverCardContext] =
   createContext<HoverCardContextValue>(HOVERCARD_NAME);
 
 interface HoverCardProps {
+  __group?: string;
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
